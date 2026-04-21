@@ -1,7 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum SessionType { 임시회, 정례회 }
-enum SessionStatus { 예정, 진행중, 완료 }
+enum SessionType { temporary, regular }
+enum SessionStatus { scheduled, inProgress, completed }
+
+extension SessionTypeLabel on SessionType {
+  String get label {
+    switch (this) {
+      case SessionType.temporary: return '임시회';
+      case SessionType.regular: return '정례회';
+    }
+  }
+}
+
+extension SessionStatusLabel on SessionStatus {
+  String get label {
+    switch (this) {
+      case SessionStatus.scheduled: return '예정';
+      case SessionStatus.inProgress: return '진행중';
+      case SessionStatus.completed: return '완료';
+    }
+  }
+}
 
 class Session {
   final String id;
@@ -11,16 +30,15 @@ class Session {
   final DateTime startDate;
   final DateTime endDate;
   final SessionStatus status;
-  // 세부 일정 (나중에 입력)
-  final DateTime? agendaDate;      // 안건심사일
-  final DateTime? budgetDate;      // 예산심사일
-  final DateTime? reportDate;      // 업무보고일
-  final DateTime? auditDate;       // 행감일
+  final DateTime? agendaDate;
+  final DateTime? budgetDate;
+  final DateTime? reportDate;
+  final DateTime? auditDate;
   final bool hasAgenda;
   final bool hasBudget;
   final bool hasReport;
   final bool hasAudit;
-  final bool detailEntered;        // 세부일정 입력 여부
+  final bool detailEntered;
 
   Session({
     required this.id,
@@ -49,26 +67,18 @@ class Session {
       year: data['year'] ?? DateTime.now().year,
       type: SessionType.values.firstWhere(
         (e) => e.name == data['type'],
-        orElse: () => SessionType.임시회,
+        orElse: () => SessionType.temporary,
       ),
       startDate: (data['startDate'] as Timestamp).toDate(),
       endDate: (data['endDate'] as Timestamp).toDate(),
       status: SessionStatus.values.firstWhere(
         (e) => e.name == data['status'],
-        orElse: () => SessionStatus.예정,
+        orElse: () => SessionStatus.scheduled,
       ),
-      agendaDate: data['agendaDate'] != null
-          ? (data['agendaDate'] as Timestamp).toDate()
-          : null,
-      budgetDate: data['budgetDate'] != null
-          ? (data['budgetDate'] as Timestamp).toDate()
-          : null,
-      reportDate: data['reportDate'] != null
-          ? (data['reportDate'] as Timestamp).toDate()
-          : null,
-      auditDate: data['auditDate'] != null
-          ? (data['auditDate'] as Timestamp).toDate()
-          : null,
+      agendaDate: data['agendaDate'] != null ? (data['agendaDate'] as Timestamp).toDate() : null,
+      budgetDate: data['budgetDate'] != null ? (data['budgetDate'] as Timestamp).toDate() : null,
+      reportDate: data['reportDate'] != null ? (data['reportDate'] as Timestamp).toDate() : null,
+      auditDate: data['auditDate'] != null ? (data['auditDate'] as Timestamp).toDate() : null,
       hasAgenda: data['hasAgenda'] ?? false,
       hasBudget: data['hasBudget'] ?? false,
       hasReport: data['hasReport'] ?? false,
