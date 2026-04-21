@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
         <meta-data
-            android:name="flutterEmbedding"
+            android:name="io.flutter.embedding.android.FlutterEmbeddingVersion"
             android:value="2" />
         <!-- Firebase Cloud Messaging -->
         <service
