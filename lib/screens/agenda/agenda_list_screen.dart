@@ -13,14 +13,19 @@ class AgendaListScreen extends StatelessWidget {
   Color _resultColor(AgendaResult result) {
     switch (result) {
       case AgendaResult.원안가결:
+      case AgendaResult.original:
         return Colors.green;
       case AgendaResult.수정가결:
+      case AgendaResult.amended:
         return Colors.blue;
       case AgendaResult.부결:
+      case AgendaResult.rejected:
         return Colors.red;
       case AgendaResult.보류:
+      case AgendaResult.deferred:
         return Colors.orange;
       case AgendaResult.미심사:
+      case AgendaResult.pending:
         return Colors.grey;
     }
   }
@@ -46,60 +51,7 @@ class AgendaListScreen extends StatelessWidget {
           if (agendas.isEmpty) {
             return Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.gavel, size: 64, color: Colors.grey[300]),
-                  const SizedBox(height: 16),
-                  Text('등록된 안건이 없습니다',
-                      style: TextStyle(color: Colors.grey[500])),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () =>
-                        context.go('/session/$sessionId/agenda/add'),
-                    icon: const Icon(Icons.add),
-                    label: const Text('안건 등록'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: agendas.length,
-            itemBuilder: (context, index) {
-              final agenda = agendas[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  title: Text(agenda.title),
-                  subtitle: Text('${agenda.type.name} · ${agenda.proposer}'),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _resultColor(agenda.result).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      agenda.result.name,
-                      style: TextStyle(
-                        color: _resultColor(agenda.result),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  onTap: () => context.go(
-                      '/session/$sessionId/agenda/${agenda.id}'),
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/session/$sessionId/agenda/add'),
+@@ -103,67 +103,67 @@ class AgendaListScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: const Text('안건 등록'),
         backgroundColor: const Color(0xFF1B4F8A),
@@ -128,6 +80,9 @@ class _AgendaAddScreenState extends State<AgendaAddScreen> {
   AgendaType _type = AgendaType.조례안;
   ProposerType _proposerType = ProposerType.부서발의;
   AgendaResult _result = AgendaResult.원안가결;
+  AgendaType _type = AgendaType.ordinance;
+  ProposerType _proposerType = ProposerType.department;
+  AgendaResult _result = AgendaResult.original;
   bool _isLoading = false;
 
   Future<void> _save() async {
@@ -142,6 +97,7 @@ class _AgendaAddScreenState extends State<AgendaAddScreen> {
         'proposer': _proposerController.text.trim(),
         'result': _result.name,
         'amendment': _result == AgendaResult.수정가결
+        'amendment': _result == AgendaResult.amended
             ? _amendmentController.text.trim()
             : null,
         'fileUrls': [],
@@ -167,23 +123,7 @@ class _AgendaAddScreenState extends State<AgendaAddScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: '안건명',
-                border: OutlineInputBorder(),
-              ),
-              validator: (v) => v!.isEmpty ? '안건명을 입력해주세요' : null,
-            ),
-            const SizedBox(height: 16),
-            // 안건 종류
-            const Text('안건 종류',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: AgendaType.values.map((type) {
-                return ChoiceChip(
+@@ -187,73 +187,73 @@ class _AgendaAddScreenState extends State<AgendaAddScreen> {
                   label: Text(type.name),
                   selected: _type == type,
                   onSelected: (v) => setState(() => _type = type),
@@ -210,6 +150,7 @@ class _AgendaAddScreenState extends State<AgendaAddScreen> {
               controller: _proposerController,
               decoration: InputDecoration(
                 labelText: _proposerType == ProposerType.의원발의
+                labelText: _proposerType == ProposerType.member
                     ? '발의 의원'
                     : '발의 부서',
                 border: const OutlineInputBorder(),
@@ -232,6 +173,7 @@ class _AgendaAddScreenState extends State<AgendaAddScreen> {
               }).toList(),
             ),
             if (_result == AgendaResult.수정가결) ...[
+            if (_result == AgendaResult.amended) ...[
               const SizedBox(height: 16),
               TextFormField(
                 controller: _amendmentController,
@@ -257,98 +199,3 @@ class _AgendaAddScreenState extends State<AgendaAddScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ================================================================
-// 안건 상세
-// ================================================================
-class AgendaDetailScreen extends StatelessWidget {
-  final String sessionId;
-  final String agendaId;
-  const AgendaDetailScreen(
-      {super.key, required this.sessionId, required this.agendaId});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('agendas')
-          .doc(agendaId)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Scaffold(
-              body: Center(child: CircularProgressIndicator()));
-        }
-        final agenda = Agenda.fromFirestore(snapshot.data!);
-        return Scaffold(
-          appBar: AppBar(title: Text(agenda.title)),
-          body: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _Row('안건 종류', agenda.type.name),
-                      _Row('발의 유형', agenda.proposerType.name),
-                      _Row('발의자/부서', agenda.proposer),
-                      _Row('심사 결과', agenda.result.name),
-                      if (agenda.amendment != null)
-                        _Row('수정 내용', agenda.amendment!),
-                    ],
-                  ),
-                ),
-              ),
-              if (agenda.fileNames.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                const Text('첨부 파일',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                ...agenda.fileNames.asMap().entries.map((e) {
-                  return Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.picture_as_pdf,
-                          color: Colors.red),
-                      title: Text(e.value),
-                      trailing: const Icon(Icons.download),
-                    ),
-                  );
-                }),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  final String label;
-  final String value;
-  const _Row(this.label, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text(label,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-          ),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 14))),
-        ],
-      ),
-    );
-  }
-}
