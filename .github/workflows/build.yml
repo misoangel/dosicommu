@@ -1,43 +1,61 @@
-name: Build APK
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-
-      - name: Flutter 프로젝트 새로 생성
-        run: |
-          flutter create --org com.sahagu --project-name dosicommu temp_project
-          cp -r temp_project/android .
-          rm -rf temp_project
-
-      - name: google-services.json 생성
-        run: |
-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
-
-      - name: Firebase 플러그인 추가
-        run: |
-          sed -i 's/id "com.android.application"/id "com.android.application"\n    id "com.google.gms.google-services"/' android/app/build.gradle
-          sed -i 's/classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:/classpath "com.google.gms:google-services:4.4.0"\n        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:/' android/build.gradle
-
-      - run: flutter pub get
-
-      - run: flutter build apk --release
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dosicommu-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index ae0430c07414e224bdb8451fd9c047f080307af3..37b5ce8c7c2762ea51d1b4fe9fe1f0df262e825c 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -1,43 +1,37 @@
+ name: Build APK
++
+ on:
+   push:
+     branches: [main]
+   workflow_dispatch:
++
+ jobs:
+   build:
+     runs-on: ubuntu-latest
++
+     steps:
+       - uses: actions/checkout@v4
+ 
+       - uses: actions/setup-java@v4
+         with:
+-          distribution: 'zulu'
+-          java-version: '17'
++          distribution: zulu
++          java-version: "17"
+ 
+       - uses: subosito/flutter-action@v2
+         with:
+-          channel: 'stable'
+-
+-      - name: Flutter 프로젝트 새로 생성
+-        run: |
+-          flutter create --org com.sahagu --project-name dosicommu temp_project
+-          cp -r temp_project/android .
+-          rm -rf temp_project
++          channel: stable
+ 
+       - name: google-services.json 생성
+         run: |
+-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
+-
+-      - name: Firebase 플러그인 추가
+-        run: |
+-          sed -i 's/id "com.android.application"/id "com.android.application"\n    id "com.google.gms.google-services"/' android/app/build.gradle
+-          sed -i 's/classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:/classpath "com.google.gms:google-services:4.4.0"\n        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:/' android/build.gradle
++          cat <<'EOF' > android/app/google-services.json
++          ${{ secrets.GOOGLE_SERVICES_JSON }}
++          EOF
+ 
+       - run: flutter pub get
+ 
+       - run: flutter build apk --release
+ 
+       - uses: actions/upload-artifact@v4
+         with:
+           name: dosicommu-apk
+           path: build/app/outputs/flutter-apk/app-release.apk
+ 
+EOF
+)
