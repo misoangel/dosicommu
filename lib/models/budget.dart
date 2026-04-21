@@ -1,15 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum BudgetType { 본예산, 추경 }
-enum BudgetResult { 원안가결, 수정가결, 부결 }
+enum BudgetType { main, supplementary }
+enum BudgetResult { original, amended, rejected }
+
+extension BudgetTypeLabel on BudgetType {
+  String get label {
+    switch (this) {
+      case BudgetType.main: return '본예산';
+      case BudgetType.supplementary: return '추경';
+    }
+  }
+}
+
+extension BudgetResultLabel on BudgetResult {
+  String get label {
+    switch (this) {
+      case BudgetResult.original: return '원안가결';
+      case BudgetResult.amended: return '수정가결';
+      case BudgetResult.rejected: return '부결';
+    }
+  }
+}
 
 class BudgetAdjustment {
-  final String department;   // 부서명
-  final String item;         // 항목
-  final int originalAmount;  // 원안 금액
-  final int adjustedAmount;  // 조정 금액
-  final int difference;      // 증감액
-  final String reason;       // 조정 사유
+  final String department;
+  final String item;
+  final int originalAmount;
+  final int adjustedAmount;
+  final int difference;
+  final String reason;
 
   BudgetAdjustment({
     required this.department,
@@ -48,8 +67,8 @@ class Budget {
   final String sessionId;
   final BudgetType type;
   final BudgetResult result;
-  final List<BudgetAdjustment> adjustments; // 계수조정 내역
-  final List<String> budgetCommitteeMembers; // 예결위 위원
+  final List<BudgetAdjustment> adjustments;
+  final List<String> budgetCommitteeMembers;
   final List<String> fileUrls;
   final List<String> fileNames;
   final DateTime createdAt;
@@ -73,17 +92,16 @@ class Budget {
       sessionId: data['sessionId'] ?? '',
       type: BudgetType.values.firstWhere(
         (e) => e.name == data['type'],
-        orElse: () => BudgetType.추경,
+        orElse: () => BudgetType.supplementary,
       ),
       result: BudgetResult.values.firstWhere(
         (e) => e.name == data['result'],
-        orElse: () => BudgetResult.원안가결,
+        orElse: () => BudgetResult.original,
       ),
       adjustments: (data['adjustments'] as List? ?? [])
           .map((e) => BudgetAdjustment.fromMap(e))
           .toList(),
-      budgetCommitteeMembers:
-          List<String>.from(data['budgetCommitteeMembers'] ?? []),
+      budgetCommitteeMembers: List<String>.from(data['budgetCommitteeMembers'] ?? []),
       fileUrls: List<String>.from(data['fileUrls'] ?? []),
       fileNames: List<String>.from(data['fileNames'] ?? []),
       createdAt: (data['createdAt'] as Timestamp).toDate(),
