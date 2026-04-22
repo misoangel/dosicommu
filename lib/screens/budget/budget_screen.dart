@@ -795,7 +795,7 @@ class StatsScreen extends StatelessWidget {
                                     color: Colors.green,
                                     child: Center(
                                       child: Text(
-                                        '원안 $원안',
+                                        '원안 $cntOriginal',
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 11),
@@ -811,7 +811,7 @@ class StatsScreen extends StatelessWidget {
                                     color: Colors.blue,
                                     child: Center(
                                       child: Text(
-                                        '수정 $수정',
+                                        '수정 $cntAmended',
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 11),
@@ -827,7 +827,7 @@ class StatsScreen extends StatelessWidget {
                                     color: Colors.red,
                                     child: Center(
                                       child: Text(
-                                        '부결 $부결',
+                                        '부결 $cntRejected',
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 11),
@@ -843,7 +843,7 @@ class StatsScreen extends StatelessWidget {
                                     color: Colors.orange,
                                     child: Center(
                                       child: Text(
-                                        '보류 $보류',
+                                        '보류 $cntDeferred',
                                         style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 11),
