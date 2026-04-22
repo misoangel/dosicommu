@@ -20,11 +20,11 @@ class DefaultFirebaseOptions {
   }
 
   // 이 값들은 google-services.json에서 자동으로 읽어옵니다
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_API_KEY',
-    appId: 'YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'dosicommu',
-    storageBucket: 'dosicommu.appspot.com',
-  );
+ static const FirebaseOptions android = FirebaseOptions(
+  apiKey: 'AIzaSyDHD4Hv3dbrd3x0bZi7H2v1mzD4Pv8ywQU',
+  appId: '1:1023952867123:android:753694796e2c17c17f7846',
+  messagingSenderId: '1023952867123',
+  projectId: 'dosicommu',
+  storageBucket: 'dosicommu.firebasestorage.app',
+);
 }
