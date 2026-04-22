@@ -18,27 +18,9 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Flutter 프로젝트 새로 생성
-        run: |
-          flutter create --org com.sahagu --project-name dosicommu temp_project
-          cp -r temp_project/android .
-          rm -rf temp_project
-          echo "Android 폴더 내용:"
-          ls android/
-          ls android/app/
-
       - name: google-services.json 생성
         run: |
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
-
-      - name: Firebase 플러그인 추가
-        run: |
-          if [ -f android/app/build.gradle.kts ]; then
-            sed -i 's/id("com.android.application")/id("com.android.application")\n    id("com.google.gms.google-services")/' android/app/build.gradle.kts
-            sed -i 's/id("com.android.application") version/id("com.google.gms.google-services") version "4.4.0" apply false\n    id("com.android.application") version/' android/settings.gradle.kts
-          else
-            sed -i 's/id "com.android.application"/id "com.android.application"\n    id "com.google.gms.google-services"/' android/app/build.gradle
-          fi
 
       - run: flutter pub get
 
