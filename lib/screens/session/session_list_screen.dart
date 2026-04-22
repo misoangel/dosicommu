@@ -62,18 +62,27 @@ class _SessionListScreenState extends State<SessionListScreen> {
               stream: FirebaseFirestore.instance
                   .collection('sessions')
                   .where('year', isEqualTo: _selectedYear)
-                  .orderBy('startDate')
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return const Center(child: Text('오류가 발생했습니다'));
+                  final error = snapshot.error;
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        '오류가 발생했습니다\n$error',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 final sessions = snapshot.data!.docs
                     .map((doc) => Session.fromFirestore(doc))
-                    .toList();
+                    .toList()
+                  ..sort((a, b) => a.startDate.compareTo(b.startDate));
 
                 if (sessions.isEmpty) {
                   return Center(
