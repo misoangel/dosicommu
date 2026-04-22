@@ -6,8 +6,10 @@ enum SessionStatus { scheduled, inProgress, completed }
 extension SessionTypeLabel on SessionType {
   String get label {
     switch (this) {
-      case SessionType.temporary: return '임시회';
-      case SessionType.regular: return '정례회';
+      case SessionType.temporary:
+        return '임시회';
+      case SessionType.regular:
+        return '정례회';
     }
   }
 }
@@ -15,9 +17,12 @@ extension SessionTypeLabel on SessionType {
 extension SessionStatusLabel on SessionStatus {
   String get label {
     switch (this) {
-      case SessionStatus.scheduled: return '예정';
-      case SessionStatus.inProgress: return '진행중';
-      case SessionStatus.completed: return '완료';
+      case SessionStatus.scheduled:
+        return '예정';
+      case SessionStatus.inProgress:
+        return '진행중';
+      case SessionStatus.completed:
+        return '완료';
     }
   }
 }
@@ -59,8 +64,24 @@ class Session {
     this.detailEntered = false,
   });
 
+    static DateTime? _toDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is int) {
+      return DateTime.fromMillisecondsSinceEpoch(value);
+    }
+    if (value is String) {
+      return DateTime.tryParse(value);
+    }
+    return null;
+  }
+
   factory Session.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    final startDate = _toDateTime(data['startDate']) ?? DateTime.now();
+    final endDate = _toDateTime(data['endDate']) ?? startDate;
+
     return Session(
       id: doc.id,
       name: data['name'] ?? '',
@@ -69,16 +90,16 @@ class Session {
         (e) => e.name == data['type'],
         orElse: () => SessionType.temporary,
       ),
-      startDate: (data['startDate'] as Timestamp).toDate(),
-      endDate: (data['endDate'] as Timestamp).toDate(),
+      startDate: startDate,
+      endDate: endDate,
       status: SessionStatus.values.firstWhere(
         (e) => e.name == data['status'],
         orElse: () => SessionStatus.scheduled,
       ),
-      agendaDate: data['agendaDate'] != null ? (data['agendaDate'] as Timestamp).toDate() : null,
-      budgetDate: data['budgetDate'] != null ? (data['budgetDate'] as Timestamp).toDate() : null,
-      reportDate: data['reportDate'] != null ? (data['reportDate'] as Timestamp).toDate() : null,
-      auditDate: data['auditDate'] != null ? (data['auditDate'] as Timestamp).toDate() : null,
+      agendaDate: _toDateTime(data['agendaDate']),
+      budgetDate: _toDateTime(data['budgetDate']),
+      reportDate: _toDateTime(data['reportDate']),
+      auditDate: _toDateTime(data['auditDate']),
       hasAgenda: data['hasAgenda'] ?? false,
       hasBudget: data['hasBudget'] ?? false,
       hasReport: data['hasReport'] ?? false,
