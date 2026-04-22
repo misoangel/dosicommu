@@ -15,6 +15,19 @@
 
 ---
 
+## 사전 검증(CI)
+
+APK 빌드 전에 GitHub Actions `Flutter CI` 워크플로우에서 아래를 먼저 검증합니다.
+
+1. `flutter pub get`
+2. `flutter analyze`
+3. `flutter test`
+4. `flutter build apk --debug` (컴파일 확인)
+
+PR을 올리면 자동으로 실행되어, 빌드 전에 오류를 미리 확인할 수 있습니다.
+
+---
+
 ## APK 다운로드
 
 1. GitHub → Actions 탭
